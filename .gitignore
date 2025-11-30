@@ -1,0 +1,7 @@
+# Bỏ qua thư viện nặng
+client/node_modules/
+client/dist/
+
+# File hệ thống
+.DS_Store
+Thumbs.db
