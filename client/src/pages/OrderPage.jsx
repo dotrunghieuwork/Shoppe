@@ -68,8 +68,8 @@ const OrderPage = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'order_id',
+      key: 'order_id',
       width: 70,
     },
     {
