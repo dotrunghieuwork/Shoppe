@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Tạo axios instance với cấu hình chung cho cả nhóm
 const axiosClient = axios.create({
-  baseURL: 'http://localhost/Shoppe/server/api', // Đường dẫn đến API PHP
+  baseURL: 'http://localhost:5000', // Đường dẫn đến Flask BE
   headers: {
     'Content-Type': 'application/json',
   },
