@@ -17,7 +17,7 @@ const OrderPage = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const response = await axiosClient.get('/orders.php');
+      const response = await axiosClient.get('/orders');
       if (response.success) {
         setOrders(response.data);
         calculateStats(response.data);
@@ -32,11 +32,11 @@ const OrderPage = () => {
   // Tính toán thống kê
   const calculateStats = (orderList) => {
     const total = orderList.length;
-    const pending = orderList.filter(o => o.status !== 'Delivered').length;
-    const delivered = orderList.filter(o => o.status === 'Delivered').length;
+    const pending = orderList.filter(o => o.status === 'pending' || o.status === 'shipped').length;
+    const delivered = orderList.filter(o => o.status === 'delivered').length;
     const totalRevenue = orderList
-      .filter(o => o.status === 'Delivered')
-      .reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
+      .filter(o => o.status === 'delivered')
+      .reduce((sum, o) => sum + parseFloat(o.total_cost || 0), 0);
     
     setStats({ total, pending, delivered, totalRevenue });
   };
@@ -44,7 +44,7 @@ const OrderPage = () => {
   // Cập nhật status đơn hàng
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const response = await axiosClient.post('/updateStatus.php', {
+      const response = await axiosClient.post('/orders/update-status', {
         order_id: orderId,
         status: newStatus
       });
@@ -91,10 +91,10 @@ const OrderPage = () => {
     },
     {
       title: 'Tổng tiền',
-      dataIndex: 'total_amount',
-      key: 'total_amount',
+      dataIndex: 'total_cost',
+      key: 'total_cost',
       width: 120,
-      render: (amount) => `${parseFloat(amount).toLocaleString()} đ`,
+      render: (amount) => `${parseFloat(amount || 0).toLocaleString()} đ`,
     },
     {
       title: 'Ngày đặt',
@@ -111,13 +111,12 @@ const OrderPage = () => {
         <Select
           value={status}
           style={{ width: 130 }}
-          onChange={(value) => handleStatusChange(record.id, value)}
+          onChange={(value) => handleStatusChange(record.order_id, value)}
         >
-          <Select.Option value="Pending">Pending</Select.Option>
-          <Select.Option value="Processing">Processing</Select.Option>
-          <Select.Option value="Shipped">Shipped</Select.Option>
-          <Select.Option value="Delivered">Delivered</Select.Option>
-          <Select.Option value="Cancelled">Cancelled</Select.Option>
+          <Select.Option value="pending">Pending</Select.Option>
+          <Select.Option value="shipped">Shipped</Select.Option>
+          <Select.Option value="delivered">Delivered</Select.Option>
+          <Select.Option value="cancelled">Cancelled</Select.Option>
         </Select>
       ),
     },
@@ -185,7 +184,7 @@ const OrderPage = () => {
         columns={columns}
         dataSource={orders}
         loading={loading}
-        rowKey="id"
+        rowKey="order_id"
         pagination={{
           pageSize: 10,
           showSizeChanger: true,

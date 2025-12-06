@@ -14,12 +14,18 @@ const ProductPage = () => {
   const fetchProducts = async (keyword = '') => {
     setLoading(true);
     try {
-      // Gọi API (Backend cần viết file products.php nhận tham số search)
-      const url = keyword ? `/products.php?search=${keyword}` : '/products.php';
-      const response = await axiosClient.get(url);
+      // Gọi Flask API
+      const response = await axiosClient.get('/products');
       
       if (response.success) {
-        setProducts(response.data);
+        // Nếu có keyword, lọc phía client
+        let filteredData = response.data;
+        if (keyword) {
+          filteredData = response.data.filter(p => 
+            p.product_name.toLowerCase().includes(keyword.toLowerCase())
+          );
+        }
+        setProducts(filteredData);
       }
     } catch (error) {
       message.error('Lỗi tải danh sách sản phẩm');
@@ -47,10 +53,12 @@ const ProductPage = () => {
   };
 
   // 4. Xử lý khi bấm nút "Xóa"
-  const handleDelete = async (id) => {
+  const handleDelete = async (product_id) => {
     try {
-      const response = await axiosClient.post('/delete_product.php', { id });
-      if (response.success) {
+      const response = await axiosClient.delete('/product/delete', {
+        data: { product_id }
+      });
+      if (response && response.length > 0) {
         message.success('Xóa sản phẩm thành công');
         fetchProducts(); // Load lại bảng
       } else {
@@ -64,28 +72,28 @@ const ProductPage = () => {
   // 5. Xử lý khi bấm "Lưu" trong Modal (Cho cả Thêm và Sửa)
   const handleSave = async (values) => {
     try {
-      let url = '/add_product.php';
+      let url = '/product/insert';
       let msg = 'Thêm mới thành công';
 
       // Nếu đang sửa thì đổi API
       if (editingProduct) {
-        url = '/update_product.php';
-        values.id = editingProduct.product_id; // Gán thêm ID để biết sửa ai
+        url = '/product/update';
+        values.product_id = editingProduct.product_id;
         msg = 'Cập nhật thành công';
       }
 
-      // Gọi API lưu dữ liệu
+      // Gọi Flask API
       const response = await axiosClient.post(url, values);
 
-      if (response.success) {
+      if (response && response.length > 0) {
         message.success(msg);
-        setIsModalOpen(false); // Đóng modal
-        fetchProducts();       // Load lại bảng
+        setIsModalOpen(false);
+        fetchProducts();
       } else {
-        message.error('Có lỗi xảy ra: ' + response.message);
+        message.error('Có lỗi xảy ra');
       }
     } catch (error) {
-      message.error('Lỗi kết nối server');
+      message.error('Lỗi kết nối server: ' + error.message);
     }
   };
 
