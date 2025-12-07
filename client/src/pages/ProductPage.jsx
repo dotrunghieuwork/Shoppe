@@ -103,12 +103,14 @@ const ProductPage = () => {
       title: 'ID',
       dataIndex: 'product_id',
       width: 60,
+      sorter: (a, b) => a.product_id - b.product_id,
     },
     {
       title: 'Tên Sản Phẩm',
       dataIndex: 'product_name',
       key: 'product_name',
       render: (text) => <b>{text}</b>,
+      sorter: (a, b) => a.product_name.localeCompare(b.product_name),
     },
     {
       title: 'Giá tiền',
@@ -127,6 +129,7 @@ const ProductPage = () => {
           {qty > 0 ? qty : 'Hết hàng'}
         </Tag>
       ),
+      sorter: (a, b) => a.quantity - b.quantity,
     },
     {
       title: 'Trạng thái',
@@ -205,7 +208,12 @@ const ProductPage = () => {
           <Form.Item
             name="product_name"
             label="Tên sản phẩm"
-            rules={[{ required: true, message: 'Vui lòng nhập tên!' }]}
+            rules={[
+              { required: true, message: 'Vui lòng nhập tên sản phẩm!' },
+              { min: 3, message: 'Tên sản phẩm phải có ít nhất 3 ký tự!' },
+              { max: 200, message: 'Tên sản phẩm không được quá 200 ký tự!' },
+              { whitespace: true, message: 'Tên sản phẩm không được chỉ có khoảng trắng!' }
+            ]}
           >
             <Input placeholder="VD: Áo thun..." />
           </Form.Item>
@@ -213,8 +221,11 @@ const ProductPage = () => {
           <Form.Item
             name="description"
             label="Mô tả"
+            rules={[
+              { max: 1000, message: 'Mô tả không được quá 1000 ký tự!' }
+            ]}
           >
-            <Input.TextArea rows={2} />
+            <Input.TextArea rows={2} placeholder="Mô tả chi tiết về sản phẩm..." />
           </Form.Item>
 
           <Row gutter={16}>
@@ -222,13 +233,25 @@ const ProductPage = () => {
               <Form.Item
                 name="price"
                 label="Giá tiền"
-                rules={[{ required: true, message: 'Nhập giá!' }]}
+                rules={[
+                  { required: true, message: 'Vui lòng nhập giá!' },
+                  { 
+                    type: 'number', 
+                    min: 0, 
+                    message: 'Giá phải lớn hơn hoặc bằng 0đ!' 
+                  },
+                  { 
+                    type: 'number', 
+                    max: 1000000000, 
+                    message: 'Giá không được quá 1 tỷ đồng!' 
+                  }
+                ]}
               >
                 <InputNumber 
                   style={{ width: '100%' }} 
-                  min={0} 
                   formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                  placeholder="1,000"
                 />
               </Form.Item>
             </Col>
@@ -236,19 +259,54 @@ const ProductPage = () => {
               <Form.Item
                 name="quantity"
                 label="Số lượng"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: 'Vui lòng nhập số lượng!' },
+                  { 
+                    type: 'number', 
+                    min: 0, 
+                    message: 'Số lượng phải lớn hơn hoặc bằng 0!' 
+                  },
+                  { 
+                    type: 'number', 
+                    max: 999999, 
+                    message: 'Số lượng không được quá 999,999!' 
+                  }
+                ]}
               >
-                <InputNumber style={{ width: '100%' }} min={0} />
+                <InputNumber 
+                  style={{ width: '100%' }} 
+                  placeholder="0"
+                />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item name="seller_id" label="ID Người Bán (Tạm thời)" rules={[{ required: true }]}>
-             <InputNumber style={{ width: '100%' }} />
+          <Form.Item 
+            name="seller_id" 
+            label="ID Người Bán (Tạm thời)" 
+            rules={[
+              { required: true, message: 'Vui lòng nhập ID người bán!' },
+              { 
+                type: 'number', 
+                min: 1, 
+                message: 'ID người bán phải lớn hơn 0!' 
+              }
+            ]}
+          >
+             <InputNumber 
+               style={{ width: '100%' }} 
+               placeholder="1"
+             />
           </Form.Item>
 
-          <Form.Item name="status" label="Trạng thái">
-            <Select>
+          <Form.Item 
+            name="status" 
+            label="Trạng thái"
+            rules={[
+              { required: true, message: 'Vui lòng chọn trạng thái!' }
+            ]}
+          >
+            <Select placeholder="Chọn trạng thái">
               <Select.Option value="active">Đang bán (Active)</Select.Option>
               <Select.Option value="inactive">Ẩn (Inactive)</Select.Option>
             </Select>
