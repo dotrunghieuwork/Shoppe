@@ -190,4 +190,33 @@ CREATE TABLE IF NOT EXISTS `complaint` (
   FOREIGN KEY (`admin_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB$$
 
+
+CREATE TABLE IF NOT EXISTS `paymentMethod`(
+  `methodType` VARCHAR(255),
+  `order_id` INT,
+  `accountNumber` VARCHAR(255),
+  `cardNumber` VARCHAR(255),
+  PRIMARY KEY(`order_id`, `methodType`),
+  Foreign Key (`order_id`) REFERENCES `orders`(`order_id`)
+)ENGINE=InnoDB$$
+
+CREATE TABLE IF NOT EXISTS `financialReport`(
+  `createDate` TIMESTAMP,
+  `endDate` TIMESTAMP,
+  `admin_id` INT,
+  `commissionRate` DECIMAL(10,6),
+  PRIMARY KEY(`createDate`, `endDate`, `admin_id`),
+  Foreign Key (`admin_id`) REFERENCES `users`(`id`)
+)ENGINE=InnoDB$$
+
+CREATE TABLE IF NOT EXISTS `financialReport_seller`(
+  `createDate` TIMESTAMP,
+  `endDate` TIMESTAMP,
+  `admin_id` INT,
+  `seller_id` INT,
+  PRIMARY KEY(`createDate`, `endDate`, `seller_id`),
+  Foreign Key (`createDate`, `endDate`, `admin_id`) REFERENCES `financialReport`(`createDate`, `endDate`, `admin_id`),
+  Foreign Key (`seller_id`) REFERENCES `seller`(`user_id`)
+)ENGINE=InnoDB$$
+
 DELIMITER ;

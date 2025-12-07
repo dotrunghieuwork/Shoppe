@@ -1,7 +1,6 @@
 -- =======================
 -- 14) INSERT SAMPLE DATA (FULL)
--- =======================
-USE shopbtl;   -- Đã sửa thành shopbtl
+-- ======================= -- Đã sửa thành shopbtl
 
 -- 1) USERS (10 người)
 INSERT INTO users (username, email, password, bdate, lname, fname, link, temp_address, perm_address)
@@ -47,9 +46,23 @@ INSERT INTO category (category_name, description) VALUES
 ('Dien tu','Tai nghe, loa'),
 ('Do choi','Lego, xep hinh');
 
--- 6 & 7) FINANCIAL REPORT (Tạm bỏ vì chưa tạo bảng này)
--- Nếu muốn dùng thì phải tạo bảng trước
+-- 6) FINANCIAL REPORT 
+INSERT INTO `financialReport` (`createDate`, `endDate`, `admin_id`, `commissionRate`) 
+VALUES 
+('2025-07-01 00:00:00', '2025-07-31 23:59:59', 10, 0.05), -- Tháng 7
+('2025-08-01 00:00:00', '2025-08-31 23:59:59', 10, 0.05), -- Tháng 8
+('2025-09-01 00:00:00', '2025-09-30 23:59:59', 10, 0.05), -- Tháng 9
+('2025-10-01 00:00:00', '2025-10-31 23:59:59', 10, 0.05), -- Tháng 10
+('2025-11-01 00:00:00', '2025-11-30 23:59:59', 10, 0.05); -- Tháng 11
 
+-- 7) financialReport_seller
+INSERT INTO `financialReport_seller` (`createDate`, `endDate`, `admin_id`, `seller_id`) 
+VALUES 
+('2025-11-01 00:00:00', '2025-11-30 23:59:59', 10, 1),
+('2025-11-01 00:00:00', '2025-11-30 23:59:59', 10, 2),
+('2025-11-01 00:00:00', '2025-11-30 23:59:59', 10, 3),
+('2025-11-01 00:00:00', '2025-11-30 23:59:59', 10, 4),
+('2025-11-01 00:00:00', '2025-11-30 23:59:59', 10, 6);
 -- 8) PRODUCT (8 Sản phẩm)
 INSERT INTO product (product_name, description, price, quantity, status, seller_id) VALUES
 ('Ao thun basic','Cotton 100%',199000,120,'active',1),
@@ -93,7 +106,7 @@ INSERT INTO wishlist_item (wishlist_id, product_id) VALUES
 -- 14) ORDERS (6 Đơn hàng)
 INSERT INTO orders (order_date, expected_delivery_date, actual_delivery_date, status, total_cost, cost, customer_id, discount_id)
 VALUES
-('2025-11-01','2025-11-05','2025-11-04','delivered',398000,348000,1,1),
+('2025-11-01','2025-11-05','2025-11-04','delivered',397000,348000,1,1),
 ('2025-11-02','2025-11-06','2025-11-06','delivered',248000,218000,2,2),
 ('2025-11-03','2025-11-08','2025-11-07','delivered',399000,359000,3,3),
 ('2025-11-04','2025-11-09','2025-11-08','delivered',149000,129000,4,4),
@@ -109,8 +122,14 @@ INSERT INTO order_detail (order_id, product_id, quantity, unit_price) VALUES
 (5,7,1,499000),(5,8,1,129000),
 (6,8,1,129000);
 
--- 16) PAYMENT_METHOD (Tạm bỏ vì chưa tạo bảng này)
--- Nếu muốn dùng phải tạo bảng payment_method trước
+-- 16) PAYMENT_METHOD 
+INSERT INTO `paymentMethod` (`methodType`, `order_id`, `accountNumber`, `cardNumber`) 
+VALUES 
+('COD', 1, NULL, NULL),
+('BANK_TRANSFER', 2, '1903654123011', NULL),
+('CREDIT_CARD', 3, NULL, '4222-3333-4444-5555'),
+('E-WALLET', 4, '0909123456', NULL),
+('COD', 5, NULL, NULL);
 
 -- 17) COMPLAINT
 INSERT INTO complaint (customer_id, seller_id, admin_id, date_reported, reason, status) VALUES
@@ -130,3 +149,11 @@ INSERT INTO review (customer_id, product_id, comment, review_date, rating) VALUE
 (5,7,'Am thanh on','2025-11-10',4),
 (5,8,'Lego dep','2025-11-10',5),
 (2,3,'Phu hop','2025-11-08',4);
+
+-- 19) REFERRAL (Người giới thiệu)
+INSERT INTO referral (invited, invited_by, referral_date) VALUES
+(2, 1, '2025-10-01'), -- User 1 giới thiệu User 2
+(3, 1, '2025-10-02'),
+(4, 2, '2025-10-05'),
+(5, 2, '2025-10-06'),
+(6, 3, '2025-10-10');
