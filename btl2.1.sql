@@ -3,7 +3,7 @@ USE shopbtl;
 DELIMITER $$
 
 -- =======================================================
--- 1. THỦ TỤC THÊM SẢN PHẨM (INSERT)
+-- 1. THỦ TỤC THÊM SẢN PHẨM 
 -- =======================================================
 DROP PROCEDURE IF EXISTS `sp_product_insert`$$
 CREATE PROCEDURE `sp_product_insert`(
@@ -14,7 +14,7 @@ CREATE PROCEDURE `sp_product_insert`(
     IN p_seller_id INT
 )
 BEGIN
-    -- Validate dữ liệu
+
     IF p_product_name IS NULL OR TRIM(p_product_name) = '' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Product name cannot be empty.';
     END IF;
@@ -24,18 +24,21 @@ BEGIN
     IF p_quantity < 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Quantity cannot be negative.';
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM `seller` WHERE `user_id` = p_seller_id) THEN 
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Seller does not exist.';
+    END IF;
 
     -- Insert
     INSERT INTO `product` (product_name, description, price, quantity, status, seller_id, created_date)
     VALUES (p_product_name, p_description, p_price, p_quantity, 'active', p_seller_id, NOW());
 
-    -- Trả về sản phẩm vừa tạo để Python hiển thị
+    -- QUAN TRỌNG: Phải trả về dữ liệu để Python hiển thị
     SELECT * FROM product WHERE product_id = LAST_INSERT_ID();
 END$$
 
 
 -- =======================================================
--- 2. THỦ TỤC CẬP NHẬT SẢN PHẨM (UPDATE)
+-- 2. THỦ TỤC CẬP NHẬT SẢN PHẨM (Code gốc của em - Đã thêm Delimiter)
 -- =======================================================
 DROP PROCEDURE IF EXISTS `sp_product_update`$$
 CREATE PROCEDURE `sp_product_update`(
@@ -49,6 +52,12 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM `product` WHERE `product_id` = p_product_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Product ID does not exist.';
     END IF;
+    IF p_price <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Price must be greater than 0.';
+    END IF;
+    IF p_quantity < 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Quantity cannot be negative.';
+    END IF;
 
     UPDATE `product`
     SET `product_name` = p_product_name,
@@ -57,27 +66,29 @@ BEGIN
         `status` = p_status
     WHERE `product_id` = p_product_id;
 
+    -- Trả về dữ liệu sau khi sửa
     SELECT * FROM product WHERE product_id = p_product_id;
 END$$
 
 
 -- =======================================================
--- 3. THỦ TỤC XÓA SẢN PHẨM (DELETE)
+-- 3. THỦ TỤC XÓA SẢN PHẨM 
 -- =======================================================
 DROP PROCEDURE IF EXISTS `sp_product_delete`$$
 CREATE PROCEDURE `sp_product_delete`(IN p_product_id INT)
 BEGIN
     DECLARE v_order_count INT;
 
-    -- Kiểm tra xem sản phẩm đã có ai mua chưa
+    IF NOT EXISTS (SELECT 1 FROM `product` WHERE `product_id` = p_product_id) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Product ID not found.';
+    END IF;
+
     SELECT COUNT(*) INTO v_order_count FROM `order_detail` WHERE `product_id` = p_product_id;
 
     IF v_order_count > 0 THEN
-        -- Đã có người mua -> Xóa mềm (Đổi status thành deleted)
         UPDATE `product` SET `status` = 'deleted' WHERE `product_id` = p_product_id;
         SELECT 'Product has associated orders. Performed SOFT DELETE.' AS message;
     ELSE
-        -- Chưa ai mua -> Xóa cứng (Bay màu luôn)
         DELETE FROM `product_category` WHERE `product_id` = p_product_id;
         DELETE FROM `product` WHERE `product_id` = p_product_id;
         SELECT 'Product has no orders. Performed HARD DELETE.' AS message;
@@ -86,7 +97,7 @@ END$$
 
 
 -- =======================================================
--- 4. THỦ TỤC TÌM KIẾM NÂNG CAO (SEARCH) - Python cần cái này
+-- 4. THỦ TỤC TÌM KIẾM 
 -- =======================================================
 DROP PROCEDURE IF EXISTS `sp_search_product_advanced`$$
 CREATE PROCEDURE `sp_search_product_advanced`(
@@ -104,7 +115,7 @@ END$$
 
 
 -- =======================================================
--- 5. THỦ TỤC BÁO CÁO DOANH THU (REPORT) - Python cần cái này
+-- 5. THỦ TỤC BÁO CÁO 
 -- =======================================================
 DROP PROCEDURE IF EXISTS `sp_report_top_selling_products`$$
 CREATE PROCEDURE `sp_report_top_selling_products`(
@@ -114,8 +125,7 @@ CREATE PROCEDURE `sp_report_top_selling_products`(
 )
 BEGIN
     SELECT 
-        p.product_id,
-        p.product_name, 
+        p.product_id, p.product_name, 
         SUM(od.quantity) as total_sold, 
         SUM(od.quantity * od.unit_price) as revenue
     FROM order_detail od
