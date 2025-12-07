@@ -200,23 +200,25 @@ CREATE TABLE IF NOT EXISTS `paymentMethod`(
   Foreign Key (`order_id`) REFERENCES `orders`(`order_id`)
 )ENGINE=InnoDB$$
 
-CREATE TABLE IF NOT EXISTS `financialReport`(
-  `createDate` TIMESTAMP,
-  `endDate` TIMESTAMP,
-  `admin_id` INT,
-  `commissionRate` DECIMAL(10,6),
-  PRIMARY KEY(`createDate`, `endDate`, `admin_id`),
-  Foreign Key (`admin_id`) REFERENCES `users`(`id`)
-)ENGINE=InnoDB$$
+CREATE TABLE IF NOT EXISTS financialReport (
+    createdDate      TIMESTAMP PRIMARY KEY,
+    endDate          TIMESTAMP,
+    adminID          INT,
+    commissionRate   DECIMAL(10,6),
+    totalRevenue     DECIMAL(18,2),
+    FOREIGN KEY (adminID) REFERENCES users(id)
+) ENGINE=InnoDB$$
 
-CREATE TABLE IF NOT EXISTS `financialReport_seller`(
-  `createDate` TIMESTAMP,
-  `endDate` TIMESTAMP,
-  `admin_id` INT,
-  `seller_id` INT,
-  PRIMARY KEY(`createDate`, `endDate`, `seller_id`),
-  Foreign Key (`createDate`, `endDate`, `admin_id`) REFERENCES `financialReport`(`createDate`, `endDate`, `admin_id`),
-  Foreign Key (`seller_id`) REFERENCES `seller`(`user_id`)
-)ENGINE=InnoDB$$
+
+CREATE TABLE IF NOT EXISTS financialReport_seller (
+    createdDate     TIMESTAMP,
+    sellerID        INT,
+    sellerRevenue   DECIMAL(18,2),
+    PRIMARY KEY (createdDate, sellerID),
+    FOREIGN KEY (createdDate) REFERENCES financialReport(createdDate),
+    FOREIGN KEY (sellerID) REFERENCES seller(user_id)
+) ENGINE=InnoDB$$
+
+
 
 DELIMITER ;
