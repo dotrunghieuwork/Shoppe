@@ -9,7 +9,7 @@ CORS(app)  # Cho phép FE gọi API từ domain khác
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="24102005",      # đổi nếu bạn có mật khẩu
+    password="123456",      # đổi nếu bạn có mật khẩu
     database="shopbtl"   # đổi tên DB
 )
 
