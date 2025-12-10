@@ -210,7 +210,7 @@ const ProductPage = () => {
             label="Tên sản phẩm"
             rules={[
               { required: true, message: 'Vui lòng nhập tên sản phẩm!' },
-              { min: 3, message: 'Tên sản phẩm phải có ít nhất 3 ký tự!' },
+              { min: 1, message: 'Tên sản phẩm phải có ít nhất 1 ký tự!' },
               { max: 200, message: 'Tên sản phẩm không được quá 200 ký tự!' },
               { whitespace: true, message: 'Tên sản phẩm không được chỉ có khoảng trắng!' }
             ]}
