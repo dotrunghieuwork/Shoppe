@@ -237,8 +237,8 @@ const ProductPage = () => {
                   { required: true, message: 'Vui lòng nhập giá!' },
                   { 
                     type: 'number', 
-                    min: 0, 
-                    message: 'Giá phải lớn hơn hoặc bằng 0đ!' 
+                    min: 1, 
+                    message: 'Giá phải lớn hơn 0đ!' 
                   },
                   { 
                     type: 'number', 

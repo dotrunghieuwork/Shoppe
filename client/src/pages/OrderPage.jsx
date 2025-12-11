@@ -24,8 +24,13 @@ const OrderPage = () => {
 		try {
 			const response = await axiosClient.get("/orders");
 			if (response.success) {
-				setOrders(response.data);
-				calculateStats(response.data);
+				// Thêm line_total cho mỗi dòng
+				const ordersWithLineTotal = response.data.map(order => ({
+					...order,
+					line_total: order.quantity * order.unit_price
+				}));
+				setOrders(ordersWithLineTotal);
+				calculateStats(ordersWithLineTotal);
 			}
 		} catch (error) {
 			message.error("Không thể tải danh sách đơn hàng");
@@ -36,14 +41,31 @@ const OrderPage = () => {
 
 	// Tính toán thống kê
 	const calculateStats = (orderList) => {
-		const total = orderList.length;
-		const pending = orderList.filter(
+		// Lấy danh sách order_id duy nhất
+		const uniqueOrderIds = [...new Set(orderList.map(o => o.order_id))];
+		const total = uniqueOrderIds.length;
+		
+		// Nhóm các đơn hàng theo order_id
+		const orderMap = {};
+		orderList.forEach(item => {
+			if (!orderMap[item.order_id]) {
+				orderMap[item.order_id] = {
+					order_id: item.order_id,
+					status: item.status,
+					total_cost: 0
+				};
+			}
+			orderMap[item.order_id].total_cost += parseFloat(item.line_total || 0);
+		});
+		
+		const uniqueOrders = Object.values(orderMap);
+		const pending = uniqueOrders.filter(
 			(o) => o.status === "pending" || o.status === "shipped"
 		).length;
-		const delivered = orderList.filter(
+		const delivered = uniqueOrders.filter(
 			(o) => o.status === "delivered"
 		).length;
-		const totalRevenue = orderList
+		const totalRevenue = uniqueOrders
 			.filter((o) => o.status === "delivered")
 			.reduce((sum, o) => sum + parseFloat(o.total_cost || 0), 0);
 
